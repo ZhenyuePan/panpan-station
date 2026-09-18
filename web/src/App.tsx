@@ -20,7 +20,7 @@ const initialSection = (): Section => nav.some(n => n.id === location.pathname.s
 const blank = (kind: 'article' | 'thread'): Draft => ({ kind, title: '', body: '', tags: kind === 'thread' ? '闲聊' : '', status: 'draft' });
 type Chat = { role: 'user' | 'assistant'; content: string };
 const introStorageKey = 'panpan-station-intro-v1';
-const shouldPlayIntro = () => { try { return !matchMedia('(prefers-reduced-motion: reduce)').matches && localStorage.getItem(introStorageKey) !== 'seen'; } catch { return false; } };
+const shouldPlayIntro = () => { try { return !matchMedia('(prefers-reduced-motion: reduce)').matches && (new URLSearchParams(location.search).get('intro') === '1' || localStorage.getItem(introStorageKey) !== 'seen'); } catch { return false; } };
 
 function Markdown({ text, onEntry }: { text: string; onEntry: (id: string) => void }) {
   return <div className="markdown"><ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: ({ href, children }) => <a href={href} target={href?.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer" onClick={e => { if (href?.startsWith('/?entry=')) { e.preventDefault(); onEntry(new URL(href, location.origin).searchParams.get('entry')!); } }}>{children}</a> }}>{text}</ReactMarkdown></div>;
