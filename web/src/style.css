@@ -27,3 +27,12 @@
 /* The home is deliberately quiet: discover the room itself, not a UI about it. */
 .minimal-home .universe{inset:0}.minimal-home .scene-wrap{inset:0}.minimal-home .agent-panel{top:24px;bottom:24px}.minimal-home .world-label{padding:11px 15px;border-color:#bce9cd55;color:#dff6ea;background:#20242ae8;box-shadow:0 12px 38px #0006}
 @media(max-width:650px){.minimal-home .scene-wrap{top:0;bottom:0;left:-5%;right:-5%}.minimal-home .agent-panel{top:auto;bottom:13px}}
+
+/* Let the 3D room take over while the content panel departs. */
+.universe,.scene-wrap{transition:inset .56s cubic-bezier(.22,.8,.24,1)}
+.station.panel-leaving .universe,.station.panel-leaving .scene-wrap{inset:0}
+.station.panel-leaving .panel-layer{pointer-events:none}
+.station.panel-leaving .panel-backdrop{animation:panel-backdrop-out .28s ease forwards}
+.station.panel-leaving .content-panel{animation:panel-out .28s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes panel-backdrop-out{to{opacity:0;backdrop-filter:blur(0)}}
+@keyframes panel-out{to{opacity:0;transform:translateY(18px) scale(.985)}}

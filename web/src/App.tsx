@@ -38,18 +38,29 @@ export default function App() {
   const [admin, setAdmin] = useState<{ entries: Entry[]; calls: number; tokens: number; members: number } | null>(null); const [adminError, setAdminError] = useState('');
   const [reply, setReply] = useState(''); const [replyError, setReplyError] = useState(''); const [toast, setToast] = useState('');
   const [reduced, setReduced] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const chatBottom = useRef<HTMLDivElement>(null); const chatController = useRef<AbortController | null>(null); const panelRef = useRef<HTMLElement>(null);
+  const [panelLeaving, setPanelLeaving] = useState(false);
+  const chatBottom = useRef<HTMLDivElement>(null); const chatController = useRef<AbortController | null>(null); const panelRef = useRef<HTMLElement>(null); const panelExitTimer = useRef<number | null>(null);
 
   const refresh = useCallback(async () => {
     setLoadError('');
     try { const [a, t, u, c] = await Promise.all([api<Entry[]>('/articles'), api<Entry[]>('/threads'), api<User | null>('/me'), api<SiteConfig>('/config')]); setEntries(a); setThreads(t); setUser(u); setConfig(c); }
     catch (e) { setLoadError((e as Error).message); } finally { setLoading(false); }
   }, []);
-  const navigate = useCallback((s: Section) => { setSection(s); setEntryId(null); setDetail(null); setFilter(''); history.pushState(null, '', s === 'home' ? '/' : '/' + s); }, []);
+  const commitNavigation = useCallback((s: Section) => { setSection(s); setEntryId(null); setDetail(null); setFilter(''); history.pushState(null, '', s === 'home' ? '/' : '/' + s); }, []);
+  const navigate = useCallback((s: Section) => {
+    if (panelExitTimer.current) { window.clearTimeout(panelExitTimer.current); panelExitTimer.current = null; }
+    if (s === 'home' && (section !== 'home' || entryId)) {
+      if (reduced) { commitNavigation('home'); return; }
+      setPanelLeaving(true);
+      panelExitTimer.current = window.setTimeout(() => { panelExitTimer.current = null; setPanelLeaving(false); commitNavigation('home'); }, 280);
+      return;
+    }
+    setPanelLeaving(false); commitNavigation(s);
+  }, [commitNavigation, entryId, reduced, section]);
   const openEntry = useCallback((id: string) => { setEntryId(id); setDetail(null); setDetailError(''); setReply(''); setReplyError(''); setSearchOpen(false); history.pushState(null, '', '/?entry=' + encodeURIComponent(id)); }, []);
   const getDetail = useCallback(async (id: string) => { try { setDetail(await api('/entries/' + encodeURIComponent(id))); } catch (e) { setDetailError((e as Error).message); } }, []);
   const refreshAdmin = useCallback(async () => { setAdminError(''); try { setAdmin(await api('/admin')); } catch (e) { setAdminError((e as Error).message); } }, []);
-  useEffect(() => { void refresh(); return () => { chatController.current?.abort(); }; }, [refresh]);
+  useEffect(() => { void refresh(); return () => { chatController.current?.abort(); if (panelExitTimer.current) window.clearTimeout(panelExitTimer.current); }; }, [refresh]);
   useEffect(() => { if (entryId) { let alive = true; setDetail(null); setDetailError(''); api<{ entry: Entry; replies: Reply[] }>('/entries/' + encodeURIComponent(entryId)).then(d => { if (alive) setDetail(d); }).catch(e => { if (alive) setDetailError(e.message); }); return () => { alive = false; }; } }, [entryId]);
   useEffect(() => { if (section === 'dashboard' && user?.role === 'admin') void refreshAdmin(); }, [section, user, refreshAdmin]);
   useEffect(() => { const pop = () => { setSection(initialSection()); setEntryId(new URLSearchParams(location.search).get('entry')); }; window.addEventListener('popstate', pop); return () => window.removeEventListener('popstate', pop); }, []);
@@ -99,7 +110,7 @@ export default function App() {
   const filtered = (section === 'forum' ? threads : entries).filter(e => (e.title + e.tags + e.body).toLowerCase().includes(filter.toLowerCase()));
   const searchResults = [...entries, ...threads].filter(e => (e.title + e.tags + e.body).toLowerCase().includes(search.toLowerCase())).slice(0, 8);
 
-  return <div className={'station ' + (!panelOpen ? 'minimal-home' : '')}>
+  return <div className={'station ' + (!panelOpen ? 'minimal-home' : '') + (panelLeaving ? ' panel-leaving' : '')}>
     <div className="sky-grain" /><div className="sky-stars">{Array.from({ length: 35 }, (_, i) => <i key={i} style={{ left: ((i * 37.3) % 100) + '%', top: ((i * 23.7) % 93) + '%', animationDelay: (i % 7) + 's', opacity: .15 + i % 4 * .12 }} />)}</div>
     {panelOpen && <header className="topbar"><button className="brand" onClick={() => navigate('home')} aria-label="返回工作室"><img className="brand-avatar" src="/panpan-avatar.jpg" alt="潘潘" /><span>潘潘的小站<small>PANPAN’S LITTLE UNIVERSE</small></span></button>
       <nav className="main-nav" aria-label="主导航">{nav.map(n => <button key={n.id} className={section === n.id && !entryId ? 'active' : ''} onClick={() => navigate(n.id)}>{n.label}{n.id === 'home' && <span className="nav-dot" />}</button>)}</nav>
