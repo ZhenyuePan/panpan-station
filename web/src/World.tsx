@@ -121,7 +121,7 @@ function Room({ navigate, chat, chatting, reduced }: { navigate: (s: Section) =>
     </group>
     <Float speed={reduced ? 0 : .8} floatIntensity={.25}><group position={[-5.5, 3.4, -3]} rotation={[.45, 0, -.35]}><mesh><sphereGeometry args={[.48, 32, 24]} /><meshStandardMaterial color="#d3b19e" roughness={.8} /></mesh><mesh rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[.8, .025, 8, 64]} /><meshStandardMaterial color="#b39ad0" /></mesh></group></Float>
     <ContactShadows position={[0, -1.25, 0]} opacity={.4} scale={20} blur={3} far={5} resolution={256} color="#000000" />
-    <OrbitControls makeDefault target={[0, 1.05, 0]} enablePan={false} enableZoom={false} minPolarAngle={.7} maxPolarAngle={1.3} minAzimuthAngle={-.6} maxAzimuthAngle={1.3} autoRotate={!reduced} autoRotateSpeed={.35} />
+    <OrbitControls makeDefault target={[0, 1.05, 0]} enablePan={false} enableZoom minZoom={48} maxZoom={115} minPolarAngle={.7} maxPolarAngle={1.3} minAzimuthAngle={-.6} maxAzimuthAngle={1.3} />
   </>;
 }
 class SceneBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { failed: boolean }> { state = { failed: false }; static getDerivedStateFromError() { return { failed: true }; } render() { return this.state.failed ? this.props.fallback : this.props.children; } }
