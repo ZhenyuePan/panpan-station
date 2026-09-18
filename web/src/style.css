@@ -15,6 +15,12 @@
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
 :root[data-motion=reduced] *{animation:none!important;scroll-behavior:auto!important;transition:none!important}
 
+/* A personal mark keeps the station recognizable even when its panels are open. */
+.brand-avatar{width:42px;height:42px;object-fit:cover;border:1px solid #ffbf8758;border-radius:13px;box-shadow:0 0 0 3px #ffbf8712,0 8px 18px #0003;transform:rotate(-5deg)}
+.profile-avatar{width:122px;height:122px;object-fit:cover;border-radius:50%;border:2px solid #efcaa58a;box-shadow:0 0 0 8px #ffbf870d,0 16px 34px #0004;animation:bob 4s infinite ease-in-out}
+@media(max-width:900px){.brand-avatar{width:33px;height:33px;border-radius:10px}}
+@media(max-width:650px){.brand-avatar{width:34px;height:34px}}
+
 /* The home is deliberately quiet: discover the room itself, not a UI about it. */
 .minimal-home .universe{inset:0}.minimal-home .scene-wrap{inset:0}.minimal-home .agent-panel{top:24px;bottom:24px}.minimal-home .world-label{padding:11px 15px;border-color:#bce9cd55;color:#dff6ea;background:#20242ae8;box-shadow:0 12px 38px #0006}
 @media(max-width:650px){.minimal-home .scene-wrap{top:0;bottom:0;left:-5%;right:-5%}.minimal-home .agent-panel{top:auto;bottom:13px}}

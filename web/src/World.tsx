@@ -33,6 +33,7 @@ function Robot({ active, onClick, reduced }: { active: boolean; onClick: () => v
     <Box p={[-.44, -.02, 0]} s={[.17, .43, .22]} color="#e9c09d" rotation={[0, 0, -.3]} round /><Box p={[.44, .07, 0]} s={[.17, .43, .22]} color="#e9c09d" rotation={[0, 0, -.7]} round />
     <Box p={[0, -.02, .291]} s={[.18, .12, .02]} color={C.orange} glow={.7} />
     <mesh position={[0, -.61, 0]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[.27, .36, 32]} /><meshBasicMaterial color={C.cyan} transparent opacity={.5} side={THREE.DoubleSide} /></mesh>
+    <Beacon p={[.48, 1.1, .3]} color="#bce9cd" reduced={reduced} />
   </group></Float>;
 }
 function Plant({ p, scale = 1 }: { p: V3; scale?: number }) {
@@ -42,6 +43,19 @@ function Plant({ p, scale = 1 }: { p: V3; scale?: number }) {
 }
 function Hotspot({ p, number, label, color, onClick }: { p: V3; number?: string; label: string; color?: string; onClick: () => void }) {
   return <Html position={p} center zIndexRange={[8, 1]}><button className="world-label" onClick={onClick} style={{ '--hotspot': color || '#ffd1a1' } as React.CSSProperties}>{number && <span>{number}</span>}{label}</button></Html>;
+}
+function Beacon({ p, color = '#ffd28b', reduced = false }: { p: V3; color?: string; reduced?: boolean }) {
+  const halo = useRef<THREE.Mesh>(null);
+  useFrame(({ clock }) => {
+    if (!halo.current || reduced) return;
+    const scale = 1 + Math.sin(clock.elapsedTime * 2.2) * .16;
+    halo.current.scale.set(scale, scale, scale);
+  });
+  return <group position={p}>
+    <pointLight color={color} intensity={reduced ? .35 : .9} distance={1.15} />
+    <mesh><sphereGeometry args={[.052, 16, 16]} /><meshStandardMaterial color={color} emissive={color} emissiveIntensity={2.8} /></mesh>
+    <mesh ref={halo} position={[0, 0, .008]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[.1, .13, 24]} /><meshBasicMaterial color={color} transparent opacity={.72} side={THREE.DoubleSide} /></mesh>
+  </group>;
 }
 function Room({ navigate, chat, chatting, reduced }: { navigate: (s: Section) => void; chat: () => void; chatting: boolean; reduced: boolean }) {
   const { camera, size } = useThree();
@@ -67,6 +81,7 @@ function Room({ navigate, chat, chatting, reduced }: { navigate: (s: Section) =>
         {[.4, 1.08, 1.78, 2.49].map(y => <Box key={y} p={[0, y, .3]} s={[1.77, .09, .65]} color="#c99576" />)}
         {Array.from({ length: 17 }, (_, i) => { const row = Math.floor(i / 6); return <Box key={i} p={[-.65 + (i % 6) * .23, .67 + row * .7, .36]} s={[.16, .4 + (i % 3) * .05, .37]} color={['#edb57f', '#b4c1a0', '#b3a0c5', '#a16e77', '#eadbc1'][i % 5]} rotation={[0, 0, i === 5 ? -.16 : 0]} />; })}
         <Plant p={[.4, 2.54, 0]} scale={.48} />
+        <Beacon p={[.72, 2.56, .38]} reduced={reduced} />
       </group>
       {/* Desk, dual monitors, keyboard and a small mug. */}
       <group position={[.15, 0, -1.48]} onClick={e => { e.stopPropagation(); navigate('projects'); }} onPointerOver={() => { document.body.style.cursor = 'pointer'; }} onPointerOut={() => { document.body.style.cursor = ''; }}>
@@ -77,6 +92,7 @@ function Room({ navigate, chat, chatting, reduced }: { navigate: (s: Section) =>
         <Box p={[.05, 1.27, .32]} s={[1.35, .04, .32]} color="#7b7185" round />
         {Array.from({ length: 12 }, (_, i) => <Box key={i} p={[-.5 + (i % 6) * .21, 1.298, .23 + Math.floor(i / 6) * .14]} s={[.14, .008, .075]} color="#d6c7cf" />)}
         <Cylinder p={[1.31, 1.4, .24]} r={.13} h={.28} color={C.orange} /><Cylinder p={[1.31, 1.55, .24]} r={.1} h={.012} color="#4b3e3b" />
+        <Beacon p={[1.55, 1.48, .43]} color="#bce9cd" reduced={reduced} />
       </group>
       {/* Chair. */}
       <group position={[.23, 0, .03]} rotation={[0, -.32, 0]}><Box p={[0, .74, 0]} s={[.87, .2, .86]} color="#7b668b" round /><Box p={[0, 1.21, .31]} s={[.87, .89, .17]} color="#8e789b" rotation={[-.08, 0, 0]} round /><Cylinder p={[0, .4, 0]} r={.06} h={.6} color={C.dark} />{[0, 1, 2, 3, 4].map(i => <group key={i} rotation={[0, i * Math.PI / 2.5, 0]}><Box p={[.23, .2, 0]} s={[.58, .06, .06]} color={C.dark} /></group>)}</group>
@@ -84,6 +100,7 @@ function Room({ navigate, chat, chatting, reduced }: { navigate: (s: Section) =>
       <group position={[2.95, 2.12, -2.94]} onClick={e => { e.stopPropagation(); navigate('forum'); }} onPointerOver={() => { document.body.style.cursor = 'pointer'; }} onPointerOut={() => { document.body.style.cursor = ''; }}>
         <Box p={[0, 0, 0]} s={[1.76, 1.63, .13]} color="#bc8866" round /><Box p={[0, 0, .078]} s={[1.56, 1.44, .025]} color="#947471" />
         {[[ -.37, .29], [.34, .22], [-.3, -.4], [.37, -.35]].map(([x, y], i) => <group key={i} position={[x, y, .115]} rotation={[0, 0, (i % 2 ? 1 : -1) * .12]}><Box p={[0, 0, 0]} s={[.52, .49, .013]} color={['#efd3a0', '#bdd7ba', '#d8b6de', '#eab68f'][i]} /><mesh position={[0, .18, .03]}><sphereGeometry args={[.035, 8, 8]} /><meshStandardMaterial color="#e16e66" /></mesh>{[0, 1, 2].map(j => <Box key={j} p={[-.03, .04 - j * .09, .012]} s={[.29 - j * .05, .017, .005]} color="#947e84" />)}</group>)}
+        <Beacon p={[.66, .58, .18]} color="#ffcf8b" reduced={reduced} />
       </group>
       {/* Circular night-sky window. */}
       <mesh position={[-.33, 2.92, -2.978]}><circleGeometry args={[.51, 48]} /><meshStandardMaterial color="#39375a" emissive="#555195" emissiveIntensity={.25} /></mesh>
@@ -91,7 +108,7 @@ function Room({ navigate, chat, chatting, reduced }: { navigate: (s: Section) =>
       <mesh position={[-.18, 3.04, -2.92]}><sphereGeometry args={[.17, 24, 24]} /><meshStandardMaterial color="#efc68e" emissive="#efc68e" emissiveIntensity={.5} /></mesh>
       {/* Server rack and desk lamp. */}
       <group onClick={e => { e.stopPropagation(); navigate('dashboard'); }} onPointerOver={() => { document.body.style.cursor = 'pointer'; }} onPointerOut={() => { document.body.style.cursor = ''; }}><Box p={[3.22, .74, -.95]} s={[.83, 1.12, .95]} color="#454151" round />
-      {[0, 1, 2].map(i => <group key={i}><Box p={[3.22, 1.07 - i * .29, -.465]} s={[.64, .17, .022]} color="#252836" /><Box p={[3.42, 1.07 - i * .29, -.448]} s={[.05, .04, .012]} color={C.cyan} glow={2} /></group>)}</group>
+      {[0, 1, 2].map(i => <group key={i}><Box p={[3.22, 1.07 - i * .29, -.465]} s={[.64, .17, .022]} color="#252836" /><Box p={[3.42, 1.07 - i * .29, -.448]} s={[.05, .04, .012]} color={C.cyan} glow={2} /></group>)}<Beacon p={[3.6, 1.33, -.42]} color="#aee6ff" reduced={reduced} /></group>
       <Cylinder p={[1.85, 1.37, -1.8]} r={.15} h={.06} color={C.dark} /><Cylinder p={[1.85, 1.82, -1.8]} r={.025} h={.9} color={C.dark} />
       <mesh position={[1.85, 2.29, -1.8]}><coneGeometry args={[.27, .24, 24, 1, true]} /><meshStandardMaterial color={C.orange} side={THREE.DoubleSide} emissive={C.orange} emissiveIntensity={.25} /></mesh>
       {/* Personal corner: plant, a floor cushion and a tiny cat. */}
