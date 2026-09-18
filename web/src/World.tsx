@@ -53,8 +53,9 @@ function Beacon({ p, color = '#ffd28b', reduced = false }: { p: V3; color?: stri
   });
   return <group position={p}>
     <pointLight color={color} intensity={reduced ? .35 : .9} distance={1.15} />
-    <mesh><sphereGeometry args={[.052, 16, 16]} /><meshStandardMaterial color={color} emissive={color} emissiveIntensity={2.8} /></mesh>
+    <mesh><sphereGeometry args={[.075, 16, 16]} /><meshStandardMaterial color={color} emissive={color} emissiveIntensity={2.8} /></mesh>
     <mesh ref={halo} position={[0, 0, .008]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[.1, .13, 24]} /><meshBasicMaterial color={color} transparent opacity={.72} side={THREE.DoubleSide} /></mesh>
+    <Html center zIndexRange={[7, 0]}><span className="object-beacon" style={{ '--beacon': color } as React.CSSProperties} /></Html>
   </group>;
 }
 function Room({ navigate, chat, chatting, reduced }: { navigate: (s: Section) => void; chat: () => void; chatting: boolean; reduced: boolean }) {

@@ -18,6 +18,8 @@
 /* A personal mark keeps the station recognizable even when its panels are open. */
 .brand-avatar{width:42px;height:42px;object-fit:cover;border:1px solid #ffbf8758;border-radius:13px;box-shadow:0 0 0 3px #ffbf8712,0 8px 18px #0003;transform:rotate(-5deg)}
 .profile-avatar{width:122px;height:122px;object-fit:cover;border-radius:50%;border:2px solid #efcaa58a;box-shadow:0 0 0 8px #ffbf870d,0 16px 34px #0004;animation:bob 4s infinite ease-in-out}
+.object-beacon{display:block;width:12px;height:12px;border-radius:50%;background:var(--beacon);border:2px solid #fff9;box-shadow:0 0 0 5px color-mix(in srgb,var(--beacon) 20%,transparent),0 0 16px var(--beacon);pointer-events:none;animation:beacon-pulse 1.8s infinite ease-in-out}
+@keyframes beacon-pulse{0%,100%{transform:scale(.85);opacity:.72}50%{transform:scale(1.22);opacity:1}}
 @media(max-width:900px){.brand-avatar{width:33px;height:33px;border-radius:10px}}
 @media(max-width:650px){.brand-avatar{width:34px;height:34px}}
 
