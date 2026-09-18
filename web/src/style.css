@@ -36,3 +36,6 @@
 .station.panel-leaving .content-panel{animation:panel-out .28s cubic-bezier(.4,0,.2,1) forwards}
 @keyframes panel-backdrop-out{to{opacity:0;backdrop-filter:blur(0)}}
 @keyframes panel-out{to{opacity:0;transform:translateY(18px) scale(.985)}}
+
+/* Keep the WebGL viewport stable: only the overlay changes between sections. */
+.station:not(.minimal-home) .universe,.station:not(.minimal-home) .scene-wrap{inset:0}
