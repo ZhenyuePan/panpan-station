@@ -19,11 +19,23 @@ const projects = [
 const initialSection = (): Section => nav.some(n => n.id === location.pathname.slice(1)) || location.pathname === '/dashboard' ? location.pathname.slice(1) as Section : 'home';
 const blank = (kind: 'article' | 'thread'): Draft => ({ kind, title: '', body: '', tags: kind === 'thread' ? '闲聊' : '', status: 'draft' });
 type Chat = { role: 'user' | 'assistant'; content: string };
+const introStorageKey = 'panpan-station-intro-v1';
+const shouldPlayIntro = () => { try { return !matchMedia('(prefers-reduced-motion: reduce)').matches && localStorage.getItem(introStorageKey) !== 'seen'; } catch { return false; } };
 
 function Markdown({ text, onEntry }: { text: string; onEntry: (id: string) => void }) {
   return <div className="markdown"><ReactMarkdown remarkPlugins={[remarkGfm]} components={{ a: ({ href, children }) => <a href={href} target={href?.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer" onClick={e => { if (href?.startsWith('/?entry=')) { e.preventDefault(); onEntry(new URL(href, location.origin).searchParams.get('entry')!); } }}>{children}</a> }}>{text}</ReactMarkdown></div>;
 }
 function MiniBot({ large = false }: { large?: boolean }) { return <span className={'mini-bot ' + (large ? 'large' : '')}><i /><span className="bot-face"><b /><b /></span></span>; }
+function StudioIntro({ onComplete }: { onComplete: () => void }) {
+  useEffect(() => { const timer = window.setTimeout(onComplete, 4100); return () => window.clearTimeout(timer); }, [onComplete]);
+  return <section className="studio-intro" aria-label="潘潘的小站开场动画">
+    <div className="intro-red-field" /><div className="intro-ink-field" /><div className="intro-sun" />
+    <i className="intro-magpie"><b /></i><div className="intro-branch" />
+    <div className="intro-title-card"><span>CHAPTER 01 · THE STUDIO</span><h1>潘潘的小站</h1><p>FOR CURIOUS MINDS, AFTER DARK</p></div>
+    <div className="intro-credit">A SMALL PLACE FOR BIG IDEAS <i>✦</i></div>
+    <button className="intro-skip" onClick={onComplete}>跳过开场</button>
+  </section>;
+}
 
 export default function App() {
   const [section, setSection] = useState<Section>(initialSection);
@@ -38,6 +50,8 @@ export default function App() {
   const [admin, setAdmin] = useState<{ entries: Entry[]; calls: number; tokens: number; members: number } | null>(null); const [adminError, setAdminError] = useState('');
   const [reply, setReply] = useState(''); const [replyError, setReplyError] = useState(''); const [toast, setToast] = useState('');
   const [reduced, setReduced] = useState(() => matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const [introPlayed, setIntroPlayed] = useState(() => !shouldPlayIntro());
+  const [introOpen, setIntroOpen] = useState(() => shouldPlayIntro() && initialSection() === 'home' && !new URLSearchParams(location.search).get('entry'));
   const [panelLeaving, setPanelLeaving] = useState(false);
   const chatBottom = useRef<HTMLDivElement>(null); const chatController = useRef<AbortController | null>(null); const panelRef = useRef<HTMLElement>(null); const panelExitTimer = useRef<number | null>(null);
 
@@ -63,6 +77,12 @@ export default function App() {
   useEffect(() => { void refresh(); return () => { chatController.current?.abort(); if (panelExitTimer.current) window.clearTimeout(panelExitTimer.current); }; }, [refresh]);
   useEffect(() => { if (entryId) { let alive = true; setDetail(null); setDetailError(''); api<{ entry: Entry; replies: Reply[] }>('/entries/' + encodeURIComponent(entryId)).then(d => { if (alive) setDetail(d); }).catch(e => { if (alive) setDetailError(e.message); }); return () => { alive = false; }; } }, [entryId]);
   useEffect(() => { if (section === 'dashboard' && user?.role === 'admin') void refreshAdmin(); }, [section, user, refreshAdmin]);
+  useEffect(() => {
+    if (reduced) { setIntroOpen(false); setIntroPlayed(true); return; }
+    if (section !== 'home' || entryId || introPlayed) return;
+    setIntroPlayed(true); setIntroOpen(true);
+    try { localStorage.setItem(introStorageKey, 'seen'); } catch { /* storage is optional */ }
+  }, [entryId, introPlayed, reduced, section]);
   useEffect(() => { const pop = () => { setSection(initialSection()); setEntryId(new URLSearchParams(location.search).get('entry')); }; window.addEventListener('popstate', pop); return () => window.removeEventListener('popstate', pop); }, []);
   useEffect(() => { document.documentElement.dataset.motion = reduced ? 'reduced' : 'full'; }, [reduced]);
   useEffect(() => { if (!toast) return; const timer = setTimeout(() => setToast(''), 3500); return () => clearTimeout(timer); }, [toast]);
@@ -120,6 +140,7 @@ export default function App() {
     <main className={'universe ' + (panelOpen ? 'has-panel' : '')}>
       <Suspense fallback={<div className="scene-loading">正在打开工作室…</div>}><World navigate={navigate} chat={() => setChatOpen(true)} chatting={thinking} reduced={reduced} /></Suspense>
     </main>
+    {introOpen && <StudioIntro onComplete={() => setIntroOpen(false)} />}
 
 
     {panelOpen && <div className="panel-layer"><button className="panel-backdrop" aria-label="回到房间" onClick={() => navigate('home')} /><section ref={panelRef} className="content-panel" tabIndex={-1} aria-label={entryId ? '阅读内容' : '小站内容'}><div className="panel-topline"><button className="text-button" onClick={() => entryId ? navigate(detail?.entry.kind === 'thread' ? 'forum' : 'blog') : navigate('home')}><ChevronLeft size={16} />{entryId ? '返回列表' : '回到工作室'}</button><span className="mono">{entryId ? 'READ / EXPLORE / THINK' : nav.find(n => n.id === section)?.en || 'OWNER’S WORKSPACE'}</span><button className="icon-button" aria-label="关闭内容面板" onClick={() => navigate('home')}><X size={19} /></button></div>
