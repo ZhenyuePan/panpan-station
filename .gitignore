@@ -1,0 +1,9 @@
+node_modules/
+web/dist/
+.data/
+.env
+bin/
+*.log
+*.tar.gz
+test-results/
+*.tsbuildinfo
