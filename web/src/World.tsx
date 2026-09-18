@@ -40,10 +40,10 @@ function Plant({ p, scale = 1 }: { p: V3; scale?: number }) {
     {[0, 1, 2, 3, 4].map(i => <group key={i} rotation={[0, i * 1.3, 0]}><mesh position={[.1, .78 + (i % 2) * .19, 0]} rotation={[0, 0, -.5 - (i % 2) * .35]} scale={[.15, .46, .075]} castShadow><sphereGeometry args={[1, 8, 8]} /><meshStandardMaterial color={i % 2 ? '#639980' : '#9db68a'} /></mesh></group>)}
   </group>;
 }
-function Hotspot({ p, number, label, color, onClick }: { p: V3; number: string; label: string; color?: string; onClick: () => void }) {
-  return <Html position={p} center zIndexRange={[8, 1]}><button className="world-label" onClick={onClick} style={{ '--hotspot': color || '#ffd1a1' } as React.CSSProperties}><span>{number}</span>{label}<b>↗</b></button></Html>;
+function Hotspot({ p, number, label, color, onClick }: { p: V3; number?: string; label: string; color?: string; onClick: () => void }) {
+  return <Html position={p} center zIndexRange={[8, 1]}><button className="world-label" onClick={onClick} style={{ '--hotspot': color || '#ffd1a1' } as React.CSSProperties}>{number && <span>{number}</span>}{label}</button></Html>;
 }
-function Room({ navigate, chat, chatting, orbit, reduced }: { navigate: (s: Section) => void; chat: () => void; chatting: boolean; orbit: boolean; reduced: boolean }) {
+function Room({ navigate, chat, chatting, reduced }: { navigate: (s: Section) => void; chat: () => void; chatting: boolean; reduced: boolean }) {
   const { camera, size } = useThree();
   useEffect(() => { camera.zoom = Math.min(size.width / 12.7, size.height / 9.2, 76); camera.updateProjectionMatrix(); }, [camera, size.width, size.height]);
   return <>
@@ -61,7 +61,7 @@ function Room({ navigate, chat, chatting, orbit, reduced }: { navigate: (s: Sect
       <mesh position={[.25, .19, 1.1]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow><circleGeometry args={[1.85, 64]} /><meshStandardMaterial color="#b49bbb" roughness={1} /></mesh>
       <mesh position={[.25, .195, 1.1]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[1.55, 1.58, 64]} /><meshStandardMaterial color="#d0b6c7" /></mesh>
       {/* A real, constructed bookshelf: warm wood, books and an illuminated edge. */}
-      <group position={[-2.8, 0, -1.94]} onClick={e => { e.stopPropagation(); navigate('blog'); }}>
+      <group position={[-2.8, 0, -1.94]} onClick={e => { e.stopPropagation(); navigate('blog'); }} onPointerOver={() => { document.body.style.cursor = 'pointer'; }} onPointerOut={() => { document.body.style.cursor = ''; }}>
         <Box p={[0, 1.38, 0]} s={[1.72, 2.43, .52]} color="#685265" round />
         <Box p={[0, 1.38, .29]} s={[1.55, 2.2, .04]} color="#493d51" />
         {[.4, 1.08, 1.78, 2.49].map(y => <Box key={y} p={[0, y, .3]} s={[1.77, .09, .65]} color="#c99576" />)}
@@ -69,7 +69,7 @@ function Room({ navigate, chat, chatting, orbit, reduced }: { navigate: (s: Sect
         <Plant p={[.4, 2.54, 0]} scale={.48} />
       </group>
       {/* Desk, dual monitors, keyboard and a small mug. */}
-      <group position={[.15, 0, -1.48]} onClick={e => { e.stopPropagation(); navigate('projects'); }}>
+      <group position={[.15, 0, -1.48]} onClick={e => { e.stopPropagation(); navigate('projects'); }} onPointerOver={() => { document.body.style.cursor = 'pointer'; }} onPointerOut={() => { document.body.style.cursor = ''; }}>
         <Box p={[.15, 1.16, 0]} s={[3.55, .16, 1.22]} color="#d49f78" round />
         {[-1.35, 1.62].map(x => <Box key={x} p={[x, .65, 0]} s={[.12, 1.05, .85]} color="#433b51" />)}
         <Screen p={[-.53, 1.95, -.27]} /><Screen p={[.85, 1.95, -.23]} size={[1.2, .86, .1]} color="#d2a1ee" />
@@ -81,7 +81,7 @@ function Room({ navigate, chat, chatting, orbit, reduced }: { navigate: (s: Sect
       {/* Chair. */}
       <group position={[.23, 0, .03]} rotation={[0, -.32, 0]}><Box p={[0, .74, 0]} s={[.87, .2, .86]} color="#7b668b" round /><Box p={[0, 1.21, .31]} s={[.87, .89, .17]} color="#8e789b" rotation={[-.08, 0, 0]} round /><Cylinder p={[0, .4, 0]} r={.06} h={.6} color={C.dark} />{[0, 1, 2, 3, 4].map(i => <group key={i} rotation={[0, i * Math.PI / 2.5, 0]}><Box p={[.23, .2, 0]} s={[.58, .06, .06]} color={C.dark} /></group>)}</group>
       {/* Community pinboard. */}
-      <group position={[2.95, 2.12, -2.94]} onClick={e => { e.stopPropagation(); navigate('forum'); }}>
+      <group position={[2.95, 2.12, -2.94]} onClick={e => { e.stopPropagation(); navigate('forum'); }} onPointerOver={() => { document.body.style.cursor = 'pointer'; }} onPointerOut={() => { document.body.style.cursor = ''; }}>
         <Box p={[0, 0, 0]} s={[1.76, 1.63, .13]} color="#bc8866" round /><Box p={[0, 0, .078]} s={[1.56, 1.44, .025]} color="#947471" />
         {[[ -.37, .29], [.34, .22], [-.3, -.4], [.37, -.35]].map(([x, y], i) => <group key={i} position={[x, y, .115]} rotation={[0, 0, (i % 2 ? 1 : -1) * .12]}><Box p={[0, 0, 0]} s={[.52, .49, .013]} color={['#efd3a0', '#bdd7ba', '#d8b6de', '#eab68f'][i]} /><mesh position={[0, .18, .03]}><sphereGeometry args={[.035, 8, 8]} /><meshStandardMaterial color="#e16e66" /></mesh>{[0, 1, 2].map(j => <Box key={j} p={[-.03, .04 - j * .09, .012]} s={[.29 - j * .05, .017, .005]} color="#947e84" />)}</group>)}
       </group>
@@ -90,8 +90,8 @@ function Room({ navigate, chat, chatting, orbit, reduced }: { navigate: (s: Sect
       <mesh position={[-.33, 2.92, -2.955]}><torusGeometry args={[.54, .055, 12, 64]} /><meshStandardMaterial color="#e0c5a8" /></mesh>
       <mesh position={[-.18, 3.04, -2.92]}><sphereGeometry args={[.17, 24, 24]} /><meshStandardMaterial color="#efc68e" emissive="#efc68e" emissiveIntensity={.5} /></mesh>
       {/* Server rack and desk lamp. */}
-      <Box p={[3.22, .74, -.95]} s={[.83, 1.12, .95]} color="#454151" round />
-      {[0, 1, 2].map(i => <group key={i}><Box p={[3.22, 1.07 - i * .29, -.465]} s={[.64, .17, .022]} color="#252836" /><Box p={[3.42, 1.07 - i * .29, -.448]} s={[.05, .04, .012]} color={C.cyan} glow={2} /></group>)}
+      <group onClick={e => { e.stopPropagation(); navigate('dashboard'); }} onPointerOver={() => { document.body.style.cursor = 'pointer'; }} onPointerOut={() => { document.body.style.cursor = ''; }}><Box p={[3.22, .74, -.95]} s={[.83, 1.12, .95]} color="#454151" round />
+      {[0, 1, 2].map(i => <group key={i}><Box p={[3.22, 1.07 - i * .29, -.465]} s={[.64, .17, .022]} color="#252836" /><Box p={[3.42, 1.07 - i * .29, -.448]} s={[.05, .04, .012]} color={C.cyan} glow={2} /></group>)}</group>
       <Cylinder p={[1.85, 1.37, -1.8]} r={.15} h={.06} color={C.dark} /><Cylinder p={[1.85, 1.82, -1.8]} r={.025} h={.9} color={C.dark} />
       <mesh position={[1.85, 2.29, -1.8]}><coneGeometry args={[.27, .24, 24, 1, true]} /><meshStandardMaterial color={C.orange} side={THREE.DoubleSide} emissive={C.orange} emissiveIntensity={.25} /></mesh>
       {/* Personal corner: plant, a floor cushion and a tiny cat. */}
@@ -99,19 +99,15 @@ function Room({ navigate, chat, chatting, orbit, reduced }: { navigate: (s: Sect
       <Box p={[-2.22, .4, 1.9]} s={[1.08, .4, .9]} color="#deae7f" round />
       <group position={[-2.18, .75, 1.9]}><mesh scale={[.37, .2, .23]} castShadow><sphereGeometry args={[1, 16, 12]} /><meshStandardMaterial color="#f0d5bc" /></mesh><mesh position={[.23, .1, .1]} castShadow><sphereGeometry args={[.19, 12, 12]} /><meshStandardMaterial color="#f0d5bc" /></mesh>{[.12, .33].map(x => <mesh key={x} position={[x, .28, .1]}><coneGeometry args={[.075, .16, 4]} /><meshStandardMaterial color="#e5b99a" /></mesh>)}</group>
       <Robot active={chatting} onClick={chat} reduced={reduced} />
-      <Hotspot p={[-3.03, 3.22, -.94]} label="灵感书架" number="01" onClick={() => navigate('blog')} />
-      <Hotspot p={[.0, 2.95, -.56]} label="项目工作台" number="02" onClick={() => navigate('projects')} />
-      <Hotspot p={[3.28, 3.46, -1.77]} label="社区公告板" number="03" onClick={() => navigate('forum')} />
-      <Hotspot p={[2.95, 2.55, 1.73]} label="和小潘聊聊" number="✦" color="#bce9cd" onClick={chat} />
-      <Html position={[-.5, -.25, 3.45]} center transform rotation={[0, 0, 0]} distanceFactor={5} zIndexRange={[1, 0]}><div className="room-plaque">PANPAN’S WORKSHOP · EST. 2026</div></Html>
+      <Hotspot p={[2.95, 2.55, 1.73]} label="和小潘聊聊" color="#bce9cd" onClick={chat} />
     </group>
     <Float speed={reduced ? 0 : .8} floatIntensity={.25}><group position={[-5.5, 3.4, -3]} rotation={[.45, 0, -.35]}><mesh><sphereGeometry args={[.48, 32, 24]} /><meshStandardMaterial color="#d3b19e" roughness={.8} /></mesh><mesh rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[.8, .025, 8, 64]} /><meshStandardMaterial color="#b39ad0" /></mesh></group></Float>
     <ContactShadows position={[0, -1.25, 0]} opacity={.4} scale={20} blur={3} far={5} resolution={256} color="#000000" />
-    <OrbitControls makeDefault target={[0, 1.05, 0]} enablePan={false} enableZoom={false} minPolarAngle={.7} maxPolarAngle={1.3} minAzimuthAngle={-.6} maxAzimuthAngle={1.3} autoRotate={orbit && !reduced} autoRotateSpeed={.35} />
+    <OrbitControls makeDefault target={[0, 1.05, 0]} enablePan={false} enableZoom={false} minPolarAngle={.7} maxPolarAngle={1.3} minAzimuthAngle={-.6} maxAzimuthAngle={1.3} autoRotate={!reduced} autoRotateSpeed={.35} />
   </>;
 }
 class SceneBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { failed: boolean }> { state = { failed: false }; static getDerivedStateFromError() { return { failed: true }; } render() { return this.state.failed ? this.props.fallback : this.props.children; } }
-export default function World(props: { navigate: (s: Section) => void; chat: () => void; chatting: boolean; orbit: boolean; reduced: boolean }) {
+export default function World(props: { navigate: (s: Section) => void; chat: () => void; chatting: boolean; reduced: boolean }) {
   const [loaded, setLoaded] = useState(false);
   const supported = useMemo(() => { try { const c = document.createElement('canvas'); const g = c.getContext('webgl2'); if (!g) return false; g.getExtension('WEBGL_lose_context')?.loseContext(); return true; } catch { return false; } }, []);
   const fallback = <div className="scene-fallback"><span>✦</span><h2>欢迎来到潘潘的工作室</h2><p>当前设备使用轻量浏览模式，所有内容仍然可以访问。</p><button className="primary" onClick={() => props.navigate('blog')}>打开灵感书架 ↗</button></div>;
