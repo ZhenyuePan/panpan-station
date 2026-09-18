@@ -39,3 +39,7 @@
 
 /* Keep the WebGL viewport stable: only the overlay changes between sections. */
 .station:not(.minimal-home) .universe,.station:not(.minimal-home) .scene-wrap{inset:0}
+
+/* Never expose the browser's default white canvas around the fullscreen station. */
+html,body,#root{width:100%;min-height:100%;height:100%;background:#191722}
+body{overflow:hidden}
