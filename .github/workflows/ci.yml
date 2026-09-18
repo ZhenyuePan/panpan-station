@@ -1,0 +1,87 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: panpan-station-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Go checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Check Go formatting
+        run: |
+          unformatted="$(gofmt -l $(find . -name '*.go' -not -path './.git/*'))"
+          test -z "$unformatted" || { echo "Run: gofmt -w $unformatted"; exit 1; }
+      - run: go vet ./...
+      - run: go test ./...
+
+  frontend:
+    name: React checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run build
+
+  deploy:
+    name: Deploy to Panzi
+    needs: [backend, frontend]
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master' && vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+      DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+      DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Build release assets
+        run: |
+          cd web && npm ci && npm run build
+          go build -trimpath -ldflags="-s -w" -o /tmp/panpan-station .
+      - name: Configure deployment SSH
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+      - name: Upload and restart safely
+        run: |
+          target="$DEPLOY_USER@$DEPLOY_HOST"
+          rsync -az web/dist/ "$target:$DEPLOY_PATH/web/dist/"
+          scp /tmp/panpan-station "$target:$DEPLOY_PATH/bin/panpan-station.next"
+          ssh "$target" "install -m 0755 '$DEPLOY_PATH/bin/panpan-station.next' '$DEPLOY_PATH/bin/panpan-station' && sudo systemctl restart panpan-station && sudo systemctl is-active panpan-station"

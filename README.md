@@ -56,8 +56,23 @@ sudo systemctl status panpan-station
 ## 验证
 
 ```powershell
+go fmt ./...
+go vet ./...
 go test ./...
-cd web; npm run build
+cd web; npm ci; npm run format:check; npm run build
 ```
 
-测试覆盖权限、CSRF、草稿隔离、论坛 CRUD、持久化、QQ state 防重放、Agent 工具边界、DeepSeek 工具循环和旧文章导入。
+格式化代码时执行 `cd web; npm run format`。前端用 Prettier，Go 使用内置 `go fmt`。
+
+测试覆盖权限、CSRF、草稿隔离、论坛 CRUD、输入校验、静态资源缓存与 SPA 回退、持久化、QQ state 防重放、Agent 工具边界、DeepSeek 工具循环和旧文章导入。
+
+## CI/CD
+
+GitHub Actions 工作流位于 `.github/workflows/ci.yml`：每次推送和 Pull Request 都会执行 Go 格式校验、`go vet`、后端单测、前端 Prettier 校验和生产构建。
+
+部署 job 只会在 `master` 的检查全部通过后运行，且默认关闭。需要启用自动部署时，在仓库 Settings → Secrets and variables → Actions 配置：
+
+- Variable：`DEPLOY_ENABLED=true`
+- Secrets：`DEPLOY_HOST`、`DEPLOY_USER`（当前服务器为 `ubuntu`）、`DEPLOY_PATH`（当前为 `/home/ubuntu/workspace/panpan-station`）、`DEPLOY_SSH_KEY` 与 `DEPLOY_KNOWN_HOSTS`
+
+`DEPLOY_KNOWN_HOSTS` 应填写服务器的 SSH host key，例如在受信任机器上执行 `ssh-keyscan -H <server-host>` 的输出。部署只上传新的 Go 二进制和 `web/dist`，不会覆盖服务器上的 `.env`、SQLite 数据库或站长密钥。

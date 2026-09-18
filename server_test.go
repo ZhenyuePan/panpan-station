@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -93,6 +94,77 @@ func TestAuthAndCSRF(t *testing.T) {
 	}
 	status(t, request(s, "POST", "/api/auth/logout", "{}", c), 200)
 	status(t, request(s, "GET", "/api/admin", "", c), 401)
+}
+
+func TestStaticRoutesAndSecurityHeaders(t *testing.T) {
+	s := testServer(t)
+	static := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(static, "assets"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(static, "index.html"), []byte("<main>station</main>"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(static, "assets", "app.js"), []byte("console.log('station')"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	s.cfg.Static = static
+
+	health := request(s, http.MethodGet, "/api/health", "", nil)
+	status(t, health, http.StatusOK)
+	if got := health.Header().Get("X-Frame-Options"); got != "DENY" {
+		t.Fatalf("X-Frame-Options = %q", got)
+	}
+	if got := health.Header().Get("Cache-Control"); got != "no-store" {
+		t.Fatalf("API cache control = %q", got)
+	}
+	if !strings.Contains(health.Header().Get("Content-Security-Policy"), "default-src 'self'") {
+		t.Fatal("missing CSP")
+	}
+
+	spa := request(s, http.MethodGet, "/projects", "", nil)
+	status(t, spa, http.StatusOK)
+	if got := spa.Body.String(); got != "<main>station</main>" {
+		t.Fatalf("SPA fallback = %q", got)
+	}
+	if got := spa.Header().Get("Cache-Control"); got != "no-cache" {
+		t.Fatalf("SPA cache control = %q", got)
+	}
+	asset := request(s, http.MethodGet, "/assets/app.js", "", nil)
+	status(t, asset, http.StatusOK)
+	if got := asset.Header().Get("Cache-Control"); got != "public, max-age=31536000, immutable" {
+		t.Fatalf("asset cache control = %q", got)
+	}
+	status(t, request(s, http.MethodGet, "/assets/missing.js", "", nil), http.StatusNotFound)
+	status(t, request(s, http.MethodPost, "/projects", `{}`, nil), http.StatusMethodNotAllowed)
+}
+
+func TestInvalidEntryAndReplyInputIsRejected(t *testing.T) {
+	s := testServer(t)
+	c := member(t, s, "alice")
+	var before int
+	if err := s.store.db.QueryRow("SELECT COUNT(*) FROM entries").Scan(&before); err != nil {
+		t.Fatal(err)
+	}
+	for _, body := range []string{
+		`{"kind":"thread","title":"x","body":"正文","status":"published"}`,
+		`{"kind":"thread","title":"有效标题","body":"x","status":"published"}`,
+		`{"kind":"thread","title":"有效标题","body":"正文","status":"archived"}`,
+		`{"kind":"note","title":"有效标题","body":"正文","status":"published"}`,
+	} {
+		status(t, request(s, http.MethodPost, "/api/entries", body, c), http.StatusBadRequest)
+	}
+	var count int
+	if err := s.store.db.QueryRow("SELECT COUNT(*) FROM entries").Scan(&count); err != nil {
+		t.Fatal(err)
+	}
+	if count != before {
+		t.Fatalf("invalid content persisted: before=%d after=%d", before, count)
+	}
+
+	e := create(t, s, c, "thread", "published")
+	status(t, request(s, http.MethodPost, "/api/entries/"+e.ID+"/replies", `{"body":"   "}`, c), http.StatusBadRequest)
+	status(t, request(s, http.MethodPut, "/api/entries/"+e.ID, `{"kind":"article","title":"有效标题","body":"正文","status":"published"}`, c), http.StatusBadRequest)
 }
 func TestDraftPrivacyCRUDAndPersistence(t *testing.T) {
 	s := testServer(t)
