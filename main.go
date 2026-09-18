@@ -22,7 +22,7 @@ import (
 	"time"
 )
 
-type config struct{ Addr, Data, Static, SiteURL, AdminKey, QQID, QQSecret, QQAdmin, DeepKey, DeepURL, Model string }
+type config struct{ Addr, Data, Static, SiteURL, ImportDir, AdminKey, QQID, QQSecret, QQAdmin, DeepKey, DeepURL, Model string }
 type server struct {
 	cfg        config
 	store      *store
@@ -51,7 +51,7 @@ func randomID() string {
 }
 func hash(s string) string { v := sha256.Sum256([]byte(s)); return hex.EncodeToString(v[:]) }
 func main() {
-	c := config{Addr: env("PANPAN_ADDR", "127.0.0.1:18080"), Data: env("PANPAN_DATA", ".data"), Static: env("PANPAN_STATIC", "web/dist"), SiteURL: strings.TrimRight(env("PANPAN_SITE_URL", "http://127.0.0.1:18080"), "/"), AdminKey: os.Getenv("PANPAN_ADMIN_KEY"), QQID: os.Getenv("QQ_APP_ID"), QQSecret: os.Getenv("QQ_APP_SECRET"), QQAdmin: os.Getenv("QQ_ADMIN_OPENID"), DeepKey: os.Getenv("DEEPSEEK_API_KEY"), DeepURL: strings.TrimRight(env("DEEPSEEK_BASE_URL", "https://api.deepseek.com"), "/"), Model: env("DEEPSEEK_MODEL", "deepseek-flash")}
+	c := config{Addr: env("PANPAN_ADDR", "127.0.0.1:18080"), Data: env("PANPAN_DATA", ".data"), Static: env("PANPAN_STATIC", "web/dist"), ImportDir: os.Getenv("PANPAN_IMPORT_DIR"), SiteURL: strings.TrimRight(env("PANPAN_SITE_URL", "http://127.0.0.1:18080"), "/"), AdminKey: os.Getenv("PANPAN_ADMIN_KEY"), QQID: os.Getenv("QQ_APP_ID"), QQSecret: os.Getenv("QQ_APP_SECRET"), QQAdmin: os.Getenv("QQ_ADMIN_OPENID"), DeepKey: os.Getenv("DEEPSEEK_API_KEY"), DeepURL: strings.TrimRight(env("DEEPSEEK_BASE_URL", "https://api.deepseek.com"), "/"), Model: env("DEEPSEEK_MODEL", "deepseek-flash")}
 	if err := os.MkdirAll(c.Data, 0700); err != nil {
 		log.Fatal(err)
 	}
@@ -75,6 +75,15 @@ func main() {
 		log.Fatal(err)
 	}
 	defer st.db.Close()
+	if c.ImportDir != "" {
+		n, err := st.importLegacy(c.ImportDir)
+		if err != nil {
+			log.Fatalf("import legacy posts: %v", err)
+		}
+		if n > 0 {
+			log.Printf("imported %d legacy posts", n)
+		}
+	}
 	s := &server{cfg: c, store: st, client: &http.Client{Timeout: 90 * time.Second}, agentSlots: make(chan struct{}, 3)}
 	h := &http.Server{Addr: c.Addr, Handler: s.routes(), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 150 * time.Second, IdleTimeout: 60 * time.Second, MaxHeaderBytes: 16 << 10}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

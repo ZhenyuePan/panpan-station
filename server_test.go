@@ -255,3 +255,23 @@ func TestQQStateIsBoundAndSingleUse(t *testing.T) {
 	}
 	status(t, request(s, "GET", "/api/auth/qq/callback?state="+c.Value+"&code=replay", "", c), 400)
 }
+
+func TestLegacyImportIsIdempotentAndSanitizesLocalImages(t *testing.T) {
+	st, err := openStore(filepath.Join(t.TempDir(), "import.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.db.Close()
+	n, err := st.importLegacy("legacy-content")
+	if err != nil || n != 19 {
+		t.Fatalf("import: %d, %v", n, err)
+	}
+	n, err = st.importLegacy("legacy-content")
+	if err != nil || n != 0 {
+		t.Fatalf("repeat import: %d, %v", n, err)
+	}
+	e, err := st.get(legacyID("CPP.mdx"))
+	if err != nil || strings.Contains(e.Body, "C:") || e.Title != "技术栈八股整理" {
+		t.Fatalf("legacy post was not safely imported: %v", err)
+	}
+}

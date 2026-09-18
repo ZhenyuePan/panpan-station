@@ -1,0 +1,24 @@
+[Unit]
+Description=Panpan Station (Go API and React web)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/workspace/panpan-station
+EnvironmentFile=-/home/ubuntu/workspace/panpan-station/.env
+Environment=PANPAN_ADDR=127.0.0.1:18080
+Environment=PANPAN_DATA=.data
+Environment=PANPAN_STATIC=web/dist
+Environment=PANPAN_IMPORT_DIR=legacy-content
+ExecStart=/home/ubuntu/workspace/panpan-station/bin/panpan-station
+Restart=on-failure
+RestartSec=3
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
