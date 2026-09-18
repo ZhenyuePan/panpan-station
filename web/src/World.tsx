@@ -120,7 +120,7 @@ function Room({ navigate, chat, chatting, reduced }: { navigate: (s: Section) =>
     </group>
     <Float speed={reduced ? 0 : .8} floatIntensity={.25}><group position={[-5.5, 3.4, -3]} rotation={[.45, 0, -.35]}><mesh><sphereGeometry args={[.48, 32, 24]} /><meshStandardMaterial color="#d3b19e" roughness={.8} /></mesh><mesh rotation={[Math.PI / 2, 0, 0]}><torusGeometry args={[.8, .025, 8, 64]} /><meshStandardMaterial color="#b39ad0" /></mesh></group></Float>
     <ContactShadows position={[0, -1.25, 0]} opacity={.4} scale={20} blur={3} far={5} resolution={256} color="#000000" />
-    <OrbitControls makeDefault target={[0, 1.05, 0]} enablePan={false} enableZoom minZoom={48} maxZoom={115} minPolarAngle={.7} maxPolarAngle={1.3} minAzimuthAngle={-.6} maxAzimuthAngle={1.3} />
+    <OrbitControls makeDefault target={[0, 1.18, -.25]} enablePan={false} enableZoom minZoom={48} maxZoom={115} minPolarAngle={.7} maxPolarAngle={1.3} minAzimuthAngle={-.6} maxAzimuthAngle={1.3} />
   </>;
 }
 class SceneBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { failed: boolean }> { state = { failed: false }; static getDerivedStateFromError() { return { failed: true }; } render() { return this.state.failed ? this.props.fallback : this.props.children; } }
@@ -129,6 +129,6 @@ export default function World(props: { navigate: (s: Section) => void; chat: () 
   const supported = useMemo(() => { try { const c = document.createElement('canvas'); const g = c.getContext('webgl2'); if (!g) return false; g.getExtension('WEBGL_lose_context')?.loseContext(); return true; } catch { return false; } }, []);
   const fallback = <div className="scene-fallback"><span>✦</span><h2>欢迎来到潘潘的工作室</h2><p>当前设备使用轻量浏览模式，所有内容仍然可以访问。</p><button className="primary" onClick={() => props.navigate('blog')}>打开灵感书架 ↗</button></div>;
   return <div className={'scene-wrap ' + (loaded ? 'scene-loaded' : '')}>
-    <SceneBoundary fallback={fallback}>{supported ? <Suspense fallback={<div className="scene-loading">正在点亮工作室 <span>···</span></div>}><Canvas shadows orthographic camera={{ position: [10, 9, 12], zoom: 65 }} dpr={[1, 1.6]} gl={{ antialias: true, alpha: true }} onCreated={({ gl }) => { gl.setClearColor('#000000', 0); setLoaded(true); }}><Room {...props} /></Canvas></Suspense> : fallback}</SceneBoundary>
+    <SceneBoundary fallback={fallback}>{supported ? <Suspense fallback={<div className="scene-loading">正在点亮工作室 <span>···</span></div>}><Canvas shadows orthographic camera={{ position: [6.4, 7.6, 15.2], zoom: 65 }} dpr={[1, 1.6]} gl={{ antialias: true, alpha: true }} onCreated={({ gl }) => { gl.setClearColor('#000000', 0); setLoaded(true); }}><Room {...props} /></Canvas></Suspense> : fallback}</SceneBoundary>
   </div>;
 }
