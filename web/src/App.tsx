@@ -1337,7 +1337,9 @@ export default function App() {
 
       {panelOpen && !chatOpen && (
         <button
-          className="agent-dock"
+          className={
+            "agent-dock " + (section === "life" ? "life-agent-dock" : "")
+          }
           aria-label="打开潘潘助手"
           onClick={() => setChatOpen(true)}
         >

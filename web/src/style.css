@@ -812,6 +812,10 @@ svg {
 .life-panel .life-coming-soon {
   max-width: 980px;
 }
+.life-panel .panel-topline {
+  background: #17131df4;
+  backdrop-filter: none;
+}
 .reading-panel .panel-topline {
   background: color-mix(in srgb, var(--panel) 94%, transparent);
   backdrop-filter: blur(16px);
@@ -1554,6 +1558,10 @@ svg {
 }
 .agent-dock > span:not(.mini-bot) {
   font-size: 11px;
+}
+.agent-dock.life-agent-dock {
+  background: #272330f7;
+  backdrop-filter: none;
 }
 .agent-header {
   display: flex;
