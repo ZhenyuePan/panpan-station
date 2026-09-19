@@ -1,5 +1,5 @@
 export type Section =
-  "home" | "blog" | "forum" | "projects" | "about" | "dashboard";
+  "home" | "blog" | "forum" | "projects" | "life" | "about" | "dashboard";
 export type User = { id: string; name: string; avatar: string; role: string };
 export type Entry = {
   id: string;

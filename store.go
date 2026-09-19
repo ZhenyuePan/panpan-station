@@ -374,7 +374,7 @@ func (st *store) seed() error {
 		{ID: "kv-cache-notes", Kind: "article", Title: "从 KV Cache 开始，理解一次推理", Tags: "AI Infra,学习笔记", Body: "这是一份用于展示阅读体验的入门笔记。\n\n## 为什么需要 KV Cache？\n\n自回归模型逐个生成 token。在常见的因果自注意力实现中，已经处理过的 token 的 Key 和 Value 可以保留下来，后续生成时复用，避免重复计算。\n\n## Prefill 与 Decode\n\n- **Prefill**：处理输入序列，建立已有上下文的缓存。\n- **Decode**：逐个生成新 token，读取历史缓存并追加新内容。\n\n缓存节省计算，但也占用显存。请求变多、上下文变长时，缓存管理就会成为重要问题。\n\n## 接下来读什么\n\n可以从 vLLM 的缓存管理代码入手，再看看 SGLang 的前缀复用，以及 Mooncake 的缓存传输与存储。具体实现会随版本变化，阅读时记得记录 commit。\n\n```python\n# 简化的概念示意，不是实际模型接口\nfor token in output_tokens:\n    key, value = project(token)\n    kv_cache.append(key, value)\n```"},
 		{ID: "station-design", Kind: "article", Title: "把个人主页，做成一间会回应的房间", Tags: "Build in public,Web", Body: "## 一个空间，几种入口\n\n博客是一面书架，项目是一张工作台，社区是一块公告板。把内容放回空间里，浏览就多了一点探索的感觉。\n\n## 让空间回应\n\n当访客问「有什么新文章」，助手搜索真实内容，再让书架亮起来。语言、内容与场景因此产生联系。\n\n## 保留直接的路径\n\n导航栏和快捷键始终可用。读文章时，内容面板展开；关闭它，又回到熟悉的房间。手机和不支持 WebGL 的设备也能通过普通界面访问所有内容。"},
 		{ID: "welcome-lounge", Kind: "thread", Title: "新来的朋友，在这里打个招呼吧 👋", Tags: "闲聊", Body: "欢迎来到潘潘的小站！\n\n最近在折腾什么？看了什么有意思的项目？留下你的第一条回复吧。\n\n这是小站的初始欢迎帖。"},
-		{ID: "source-reading", Kind: "thread", Title: "一起读源码：你想从哪个项目开始？", Tags: "技术交流", Body: "工作台上准备了 vLLM、SGLang、Mooncake、CacheLib 和 3FS 的入口。\n\n你更想研究推理调度、缓存管理，还是分布式存储？欢迎分享阅读路线和问题。"},
+		{ID: "source-reading", Kind: "thread", Title: "一起读源码：你想从哪个项目开始？", Tags: "技术交流", Body: "工作台上准备了 vLLM、SGLang、Mooncake、CacheLib、Folly 和 3FS 的入口。\n\n你更想研究推理调度、缓存管理、C++ 基础设施，还是分布式存储？欢迎分享阅读路线和问题。"},
 	}
 	tx, err := st.db.Begin()
 	if err != nil {

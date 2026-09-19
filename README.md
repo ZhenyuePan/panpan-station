@@ -51,6 +51,15 @@ sudo systemctl enable --now panpan-station
 sudo systemctl status panpan-station
 ```
 
+部署完成后，登录云服务器并在项目根目录快速确保服务已启动：
+
+```bash
+cd /home/ubuntu/workspace/panpan-station
+./start.sh
+```
+
+更新二进制或静态文件后使用 `./start.sh restart` 重启服务；`./start.sh status` 仅查看状态。
+
 服务默认只监听 `127.0.0.1:18080`。在域名、Nginx/Caddy 和 TLS 就绪前，使用 SSH 隧道预览；不要把明文站长后台直接暴露到公网。
 
 ## 验证

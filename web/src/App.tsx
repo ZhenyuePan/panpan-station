@@ -17,7 +17,6 @@ import {
   ChevronLeft,
   Code2,
   Command,
-  Compass,
   ExternalLink,
   Github,
   Heart,
@@ -78,6 +77,13 @@ const projects = [
     tag: "CACHING",
     text: "深入缓存分配、淘汰策略和分层存储的实现。",
     color: "#b0c7df",
+  },
+  {
+    name: "Folly",
+    repo: "facebook/folly",
+    tag: "C++ FOUNDATIONS",
+    text: "从并发原语、协程到高性能容器，回到 Meta 的 C++ 基础设施。",
+    color: "#ddae9b",
   },
   {
     name: "3FS",
@@ -659,7 +665,6 @@ export default function App() {
       chatController.current = null;
     }
   }
-
   const panelOpen = section !== "home" || !!entryId;
   const filtered = (section === "forum" ? threads : entries).filter((e) =>
     (e.title + e.tags + e.body).toLowerCase().includes(filter.toLowerCase()),
@@ -759,7 +764,13 @@ export default function App() {
       {introOpen && <StudioIntro onComplete={() => setIntroOpen(false)} />}
 
       {panelOpen && (
-        <div className="panel-layer">
+        <div
+          className={
+            "panel-layer " +
+            (entryId || section === "life" ? "reading-layer" : "") +
+            (section === "life" ? " life-layer" : "")
+          }
+        >
           <button
             className="panel-backdrop"
             aria-label="回到房间"
@@ -767,9 +778,19 @@ export default function App() {
           />
           <section
             ref={panelRef}
-            className="content-panel"
+            className={
+              "content-panel " +
+              (entryId || section === "life" ? "reading-panel" : "") +
+              (section === "life" ? " life-panel" : "")
+            }
             tabIndex={-1}
-            aria-label={entryId ? "阅读内容" : "小站内容"}
+            aria-label={
+              entryId
+                ? "阅读内容"
+                : section === "life"
+                  ? "平行人生游戏"
+                  : "小站内容"
+            }
           >
             <div className="panel-topline">
               <button
@@ -788,8 +809,10 @@ export default function App() {
               <span className="mono">
                 {entryId
                   ? "READ / EXPLORE / THINK"
-                  : nav.find((n) => n.id === section)?.en ||
-                    "OWNER’S WORKSPACE"}
+                  : section === "life"
+                    ? "ARCHIVE / SEALED / 00"
+                    : nav.find((n) => n.id === section)?.en ||
+                      "OWNER’S WORKSPACE"}
               </span>
               <button
                 className="icon-button"
@@ -939,6 +962,7 @@ export default function App() {
                           blog: "灵感，慢慢堆成书架。",
                           forum: "有趣的想法，在这里碰面。",
                           projects: "保持好奇，持续折腾。",
+                          life: "人生档案正在整理。",
                           about: "很高兴，在这里遇见你。",
                           dashboard: "欢迎回家，潘潘。",
                           home: "",
@@ -952,6 +976,7 @@ export default function App() {
                           forum: "聊技术、分享发现，或者只是来打个招呼。",
                           projects:
                             "我的源码阅读清单。打开仓库，一起往里面走一走。",
+                          life: "书架顶层的档案盒暂时封存。",
                           about: "一个人，一间工作室，一些正在生长的想法。",
                           dashboard: "写下新的灵感，照看你的互联网小角落。",
                           home: "",
@@ -1120,6 +1145,17 @@ export default function App() {
                         去社区聊聊 <ArrowRight size={16} />
                       </button>
                     </div>
+                  </div>
+                )}
+                {section === "life" && (
+                  <div className="life-coming-soon">
+                    <span className="eyebrow">ARCHIVE 00 / SEALED</span>
+                    <span className="life-coming-mark" aria-hidden="true">
+                      ✦
+                    </span>
+                    <h2>人生档案正在整理</h2>
+                    <p>这里会在合适的时候，成为一场可以慢慢走进去的游戏。</p>
+                    <small>UNDER CONSTRUCTION</small>
                   </div>
                 )}
                 {section === "about" && (
@@ -1297,6 +1333,17 @@ export default function App() {
             )}
           </section>
         </div>
+      )}
+
+      {panelOpen && !chatOpen && (
+        <button
+          className="agent-dock"
+          aria-label="打开潘潘助手"
+          onClick={() => setChatOpen(true)}
+        >
+          <MiniBot />
+          <span>和潘潘聊聊</span>
+        </button>
       )}
 
       {chatOpen && (

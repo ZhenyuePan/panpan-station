@@ -332,6 +332,50 @@ function Beacon({
     </group>
   );
 }
+function LifeArchive({
+  navigate,
+  reduced,
+  position,
+  scale = 1,
+}: {
+  navigate: (s: Section) => void;
+  reduced: boolean;
+  position: V3;
+  scale?: number;
+}) {
+  return (
+    <group
+      position={position}
+      scale={scale}
+      onClick={(e) => {
+        e.stopPropagation();
+        navigate("life");
+      }}
+      onPointerOver={() => {
+        document.body.style.cursor = "pointer";
+      }}
+      onPointerOut={() => {
+        document.body.style.cursor = "";
+      }}
+    >
+      {/* A closed archive box: its contents only become a story when opened. */}
+      <Box p={[0, 0.43, 0]} s={[0.94, 0.62, 0.67]} color="#594657" round />
+      <Box p={[0, 0.77, 0.02]} s={[0.89, 0.1, 0.62]} color="#c88a67" round />
+      <Box p={[-0.23, 0.89, 0.01]} s={[0.23, 0.21, 0.39]} color="#dfc4a0" />
+      <Box p={[0.04, 0.89, 0.01]} s={[0.23, 0.21, 0.39]} color="#a6b8a0" />
+      <Box p={[0.31, 0.89, 0.01]} s={[0.23, 0.21, 0.39]} color="#b59dc5" />
+      <mesh position={[0, 1.03, 0.32]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.12, 0.024, 10, 32]} />
+        <meshStandardMaterial
+          color="#ffd191"
+          emissive="#ffb56d"
+          emissiveIntensity={0.8}
+        />
+      </mesh>
+      <Beacon p={[0, 1.02, 0.42]} color="#ffd191" reduced={reduced} />
+    </group>
+  );
+}
 function Room({
   navigate,
   chat,
@@ -459,6 +503,12 @@ function Room({
             );
           })}
           <Plant p={[0.4, 2.54, 0]} scale={0.48} />
+          <LifeArchive
+            position={[-0.43, 2.51, 0.38]}
+            scale={0.62}
+            navigate={navigate}
+            reduced={reduced}
+          />
           <Beacon p={[0.56, 1.74, 0.68]} reduced={reduced} />
         </group>
         {/* Desk, dual monitors, keyboard and a small mug. */}
@@ -521,7 +571,7 @@ function Room({
           ))}
           <Cylinder p={[1.31, 1.4, 0.24]} r={0.13} h={0.28} color={C.orange} />
           <Cylinder p={[1.31, 1.55, 0.24]} r={0.1} h={0.012} color="#4b3e3b" />
-          <Beacon p={[1.31, 1.61, 0.4]} color="#bce9cd" reduced={reduced} />
+          <Beacon p={[0.85, 2.39, -0.08]} color="#bce9cd" reduced={reduced} />
         </group>
         {/* Chair. */}
         <group position={[0.23, 0, 0.03]} rotation={[0, -0.32, 0]}>

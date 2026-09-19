@@ -287,7 +287,7 @@ func (s *server) localGuide(text string, send func(string, any)) {
 		answer = "公告板打开啦！可以先看看大家的讨论。登录后就能发帖和回复。\n\n当前是本地导航模式，尚未连接 DeepSeek。"
 	}
 	if target == "projects" {
-		answer = "带你来到项目工作台了。这里有 vLLM、SGLang、Mooncake、CacheLib 和 3FS 的源码入口。\n\n当前是本地导航模式，尚未连接 DeepSeek。"
+		answer = "带你来到项目工作台了。这里有 vLLM、SGLang、Mooncake、CacheLib、Folly 和 3FS 的源码入口。\n\n当前是本地导航模式，尚未连接 DeepSeek。"
 	}
 	send("answer", map[string]string{"text": answer})
 	send("done", map[string]int{"tokens": 0})
